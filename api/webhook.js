@@ -1,35 +1,24 @@
-import axios from "axios";
-import { composeMessage } from "../utils/message.js";
+import fetch from 'node-fetch';
+
+const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 
 export default async function handler(req, res) {
-  try {
-    const update = req.body;
+  if (req.method !== "POST") return res.status(200).send("OK");
 
-    if (update.message) {
-      const chatId = update.message.chat.id;
-      const text = update.message.text;
+  const update = req.body;
+  const msg = update.message;
 
-      if (text === "/today") {
-        const msg = await composeMessage(false);
-        await send(chatId, msg);
-      }
-
-      if (text === "/tomorrow") {
-        const msg = await composeMessage(true);
-        await send(chatId, msg);
-      }
-    }
-
-    res.status(200).send("OK");
-  } catch (e) {
-    console.log(e);
-    res.status(200).send("OK");
+  if (msg?.text === "/start") {
+    await sendMessage(msg.chat.id, "আসসালামু আলাইকুম! ডেইলি মেসেজ বট অ্যাক্টিভ।");
   }
+
+  return res.status(200).json({ ok: true });
 }
 
-async function send(chat_id, text) {
-  return axios.post(
-    `https://api.telegram.org/bot${process.env.TOKEN}/sendMessage`,
-    { chat_id, text }
-  );
+async function sendMessage(chatId, text) {
+  await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ chat_id: chatId, text })
+  });
 }
