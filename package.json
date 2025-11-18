@@ -6,7 +6,7 @@
     "start": "vercel dev"
   },
   "dependencies": {
-    "bangla-calendar-converter": "^1.0.3",
+    "bangla-calendar": "^2.0.0",
     "hijri-date": "^1.1.0",
     "moment-timezone": "^0.5.43",
     "suncalc": "^1.9.0",
