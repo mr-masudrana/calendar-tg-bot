@@ -7,7 +7,7 @@
   },
   "dependencies": {
     "bangla-calendar": "^2.0.0",
-    "hijri-date": "^1.1.0",
+    "hijri-js": "^2.0.2",
     "moment-timezone": "^0.5.43",
     "suncalc": "^1.9.0",
     "node-fetch": "^3.4.0"
