@@ -1,5 +1,5 @@
 import { BanglaDate } from "bangla-calendar";
-import HijriDate from "hijri-date";
+import hijri from "hijri-js";
 import moment from "moment-timezone";
 import fetch from "node-fetch";
 import SunCalc from "suncalc";
@@ -23,18 +23,26 @@ function banglaWeekday(eng) {
   return map[eng] || eng;
 }
 
-function getHijri(m) {
-  const d = new Date(m.format("YYYY-MM-DD"));
-  const h = new HijriDate(d);
+function getHijriDate(m) {
+  const h = hijri.convert(new Date(m.format("YYYY-MM-DD")));
   const months = [
-    "মুহাররম", "সফর", "রবিউল আউয়াল", "রবিউস সানি", "জমাদিউল আউয়াল",
-    "জমাদিউস সানি", "রজব", "শাবান", "রমযান", "শাওয়াল",
-    "জিলক্বদ", "জিলহজ",
+    "মুহাররম",
+    "সফর",
+    "রবিউল আউয়াল",
+    "রবিউস সানি",
+    "জমাদিউল আউয়াল",
+    "জমাদিউস সানি",
+    "রজব",
+    "শাবান",
+    "রমযান",
+    "শাওয়াল",
+    "জিলক্বদ",
+    "জিলহজ",
   ];
   return {
-    day: h.getDate(),
-    monthName: months[h.getMonth()],
-    year: h.getFullYear(),
+    day: h.hd,
+    monthName: months[h.hm - 1],
+    year: h.hy,
   };
 }
 
@@ -53,13 +61,12 @@ export default async function handler(req, res) {
 
     // Bengali Date
     const bd = new BanglaDate(now.toDate());
-
     const bnDate = bd.getDate();
     const bnMonth = bd.getMonthName();
     const bnYear = bd.getYear();
 
     // Hijri Date
-    const hijri = getHijri(now);
+    const hijriDate = getHijriDate(now);
 
     // Sunrise/Sunset
     const times = SunCalc.getTimes(now.toDate(), LAT, LON);
@@ -71,7 +78,7 @@ export default async function handler(req, res) {
 🟧 আজ ${banglaWeekday(now.format("dddd"))}।
 🟩 ${now.format("DD MMMM YYYY")} খ্রিষ্টাব্দ।
 🟦 ${bnDate} ${bnMonth} ${bnYear} বঙ্গাব্দ।
-🟪 ${hijri.day} ${hijri.monthName} ${hijri.year} হিজরী।
+🟪 ${hijriDate.day} ${hijriDate.monthName} ${hijriDate.year} হিজরী।
 🌅 ঋতু: ${season(now)}।
 🌄 সূর্যোদয়: ${sunrise} মিনিট।
 ⏺ সূর্যাস্ত: ${sunset} মিনিট।
@@ -80,15 +87,13 @@ export default async function handler(req, res) {
     await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        chat_id: TARGET_CHAT,
-        text: msg,
-      }),
+      body: JSON.stringify({ chat_id: TARGET_CHAT, text: msg }),
     });
 
     res.status(200).json({ ok: true, sent: true });
+
   } catch (e) {
     console.error(e);
     res.status(500).json({ ok: false, error: e.toString() });
   }
-      }
+        }
